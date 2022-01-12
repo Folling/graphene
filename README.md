@@ -38,3 +38,6 @@ File and directory names are are to be formatted using snake_case. Excluded from
 
 # Support
 I have a fulltime job and can only afford so much time for alloy. If you would like to change that in the future consider donating to the project (note: Donating link will follow, alloy isn't worth donating yet). I also appreciate feedback (next to constructive criticism) so feel free to email me at coding@folling.de. 
+
+# Naming
+graphene is the foundation of graphite, so to speak. The same works in a chemical sense: Graphite is made out of graphene layers.
