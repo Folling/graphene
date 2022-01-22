@@ -1,78 +1,24 @@
 /*!
 The opengl shader module provides idiomatic bindings to OpenGL shaders.
-As with everything in graphene, the focus is on a 2D application, so shader reusage, combination, or monster-shaders
-are not a usecase we want to cover
+
+As with everything in graphene, the focus is on a 2D application, so shader reusage, combination, or mega-shaders
+are not a usecase we want to cover.
+
 In our scenario OpenGL shaders go through a few stages:
-  1. Creation
-  2. Compilation
-  3. Attachment
+1. Creation
+2. Compilation
+3. Attachment
 
 We do want to model this by providing both a Shader and a CompiledShader type which allows compiletime checking for whether
 or not a shader was compiled before being attached to a ShaderProgram.
 */
 
-/// Error enum for the failed creation of a shader
-#[derive(thiserror::Error, Debug, Clone, Eq, PartialEq)]
-pub enum ShaderCreationError {
-    /// Used if the underlying shadertype is not valid for OpenGL. This ought not to ever happen
-    /// but since we strive for idiomatic code it has to be mapped anyway
-    #[error("Invalid ShaderType enum: {0}")]
-    InvalidEnum(ShaderType),
-    /// Used if the underlying OpenGL error is unknown to graphene
-    #[error("Unknown Error")]
-    Unknown,
-}
-
-/// Error enum for the failed compilation of a shader
-#[derive(thiserror::Error, Debug, Clone, PartialEq)]
-pub enum ShaderCompileError {
-    /// Used if the source was passed in improperly formatted UTF8 that couldn't be converted to a c-string
-    #[error("The source passed was not properly formatted in UTF8 and could not be converted to a CString: {source}")]
-    InvalidUTF8Source {
-        #[from]
-        /// The underlying c-string conversion error
-        source: std::ffi::NulError,
-    },
-    /// Used if the underlying object was not created by OpenGL
-    #[error("The underlying object was not created by OpenGL")]
-    NotAnOpenGLValue,
-    /// Used if the shader's source couldn't be compiled due to a compilation error.
-    #[error("Invalid shader source: {0}")]
-    CompilationError(String),
-    /// Used if the shader's source couldn't be compiled due to a compilation error and the error message obtained
-    /// couldn't be converted to a rust string because it was missing a null byte at the end
-    #[error("Shader log's error message didn't contain a null byte at the end")]
-    MissingNullByte {
-        #[from]
-        /// The underlying c-string conversion error
-        source: std::ffi::FromVecWithNulError,
-    },
-    /// Used if the shader's source couldn't be compiled due to a compilation error and the error message obtained
-    /// couldn't be converted to a rust string because it was invalid UTF8
-    #[error("Shader log's error message wasn't valid UTF8")]
-    InvalidUTF8LogSource {
-        #[from]
-        /// The underlying c-string conversion error
-        source: std::ffi::IntoStringError,
-    },
-    /// Used if the underlying object was not recognised as an OpenGL shader
-    #[error("The underlying object was not recognised as an OpenGL shader")]
-    NotAShader,
-    /// Used if the underlying OpenGL error is unknown to graphene
-    #[error("Unknown Error")]
-    Unknown,
-}
-
-/// Error enum for the failed retrieval of the shader's log
-#[derive(thiserror::Error, Debug, Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Hash)]
-pub enum ShaderLogError {}
-
 /**
 Wraps the different OpenGL shader types.
 
 OpenGL supports 6 different types of shaders for varying stages of the pipeline.
-You can read more about shaders here: https://www.khronos.org/opengl/wiki/Shader
-And more about the pipeline here: https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview
+You can read more about shaders here: <https://www.khronos.org/opengl/wiki/Shader>
+And more about the pipeline here: <https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview>
 
 # Examples
 ```
@@ -111,7 +57,7 @@ For more information see the "Description" section [here](https://www.khronos.or
 let shader = Shader::new(ShaderType::Compute).expect("Unable to create compute shader");
 let iv = my_shader.get_iv(ShaderIVKind::ShaderType).expect("Unable to obtain shader type iv from shader");
 assert_eq!(iv, ShaderIVKind::Compute);
-assert_eq!(iv, my_shader.r#type()));
+assert_eq!(iv, my_shader.r#type());
 ```
 */
 
@@ -188,6 +134,48 @@ impl Shader {
         &mut self.inner
     }
 
+    // no get_delete_status since the shader is only ever deleted if it's dropped
+
+    /**
+    Retrieves the id of the shader.
+
+    # Example
+    ```
+    let shader = Shader::new(ShaderType::Compute).expect("Unable to create compute shader");
+    assert_eq!(shader.get_id(), 1); // example, YMMV
+    ```
+    */
+    pub fn get_id(&self) -> gl::types::GLuint {
+        self.inner.id
+    }
+
+    /**
+    Retrieves the type of the shader.
+
+    # Example
+    ```
+    let shader = Shader::new(ShaderType::Compute).expect("Unable to create compute shader");
+    assert_eq!(shader.get_type(), ShaderType::Compute);
+    ```
+    */
+    pub fn get_type(&self) -> ShaderType {
+        self.inner.r#type
+    }
+}
+
+/// Error enum for the failed creation of a shader
+#[derive(thiserror::Error, Debug, Clone, Eq, PartialEq)]
+pub enum ShaderCreationError {
+    /// Used if the underlying shadertype is not valid for OpenGL. This ought not to ever happen
+    /// but since we strive for idiomatic code it has to be mapped anyway
+    #[error("Invalid ShaderType enum: {0}")]
+    InvalidEnum(ShaderType),
+    /// Used if the underlying OpenGL error is unknown to graphene
+    #[error("Unknown Error")]
+    Unknown,
+}
+
+impl Shader {
     /// Returns a new shader or an error if one occurs in the underlying driver, which shouldn't happen realistically speaking.
     pub fn new(r#type: ShaderType) -> Result<Shader, ShaderCreationError> {
         let id = unsafe { gl::CreateShader(r#type as _) };
@@ -203,16 +191,56 @@ impl Shader {
             inner: ShaderInner { id, r#type },
         })
     }
+}
 
-    // no get_delete_status since the shader is only ever deleted if it's dropped
+/// Error enum for the failed compilation of a shader
+#[derive(thiserror::Error, Debug, Clone, PartialEq)]
+pub enum ShaderCompileError {
+    /// Used if the source was passed in improperly formatted UTF8 that couldn't be converted to a c-string
+    #[error("The source passed was not properly formatted in UTF8 and could not be converted to a CString: {source}")]
+    InvalidUTF8Source {
+        #[from]
+        /// The underlying c-string conversion error
+        source: std::ffi::NulError,
+    },
+    /// Used if the shader's source couldn't be compiled due to a compilation error.
+    #[error("Invalid shader source: {0}")]
+    CompilationError(String),
+    /// Used if the shader's source couldn't be compiled due to a compilation error and the error message obtained
+    /// couldn't be converted to a rust string because it was missing a null byte at the end
+    #[error("Shader log's error message didn't contain a null byte at the end")]
+    MissingNullByte {
+        #[from]
+        /// The underlying c-string conversion error
+        source: std::ffi::FromVecWithNulError,
+    },
+    /// Used if the shader's source couldn't be compiled due to a compilation error and the error message obtained
+    /// couldn't be converted to a rust string because it was invalid UTF8
+    #[error("Shader log's error message wasn't valid UTF8")]
+    InvalidUTF8LogSource {
+        #[from]
+        /// The underlying c-string conversion error
+        source: std::ffi::IntoStringError,
+    },
+    /// Used if the underlying object was not created by OpenGL
+    #[error("The underlying object was not created by OpenGL")]
+    NotAnOpenGLValue,
+    /// Used if the underlying object was not recognised as an OpenGL shader
+    #[error("The underlying object was not recognised as an OpenGL shader")]
+    NotAShader,
+    /// Used if the underlying OpenGL error is unknown to graphene
+    #[error("Unknown Error")]
+    Unknown,
+}
 
+impl Shader {
     /// Compiles the shader and returns a [CompiledShader](CompiledShader) that wraps the current object or returns an error if the operation fails.
     /// Failure is realistic in this situation and can happen in a variety of cases:
     /// 1. The source is invalid
     /// 2. The shader is in an invalid state
     /// 3. An underlying driver issue occurred
-    pub fn compile(self, src: &String) -> Result<CompiledShader, ShaderCompileError> {
-        let cstr = std::ffi::CString::new(src.as_bytes())?;
+    pub fn compile<S: AsRef<str>>(self, src: S) -> Result<CompiledShader, ShaderCompileError> {
+        let cstr = std::ffi::CString::new(src.as_ref().as_bytes())?;
 
         let rc = unsafe {
             let count = 1;
@@ -274,32 +302,6 @@ impl Shader {
             inner: CompiledShaderInner { shader: self },
         })
     }
-
-    /**
-    Retrieves the id of the shader.
-
-    # Example
-    ```
-    let shader = Shader::new(ShaderType::Compute).expect("Unable to create compute shader");
-    assert_eq!(shader.get_id(), 1); // example, the actual value might be different
-    ```
-    */
-    pub fn get_id(&self) -> gl::types::GLuint {
-        self.inner.id
-    }
-
-    /**
-    Retrieves the type of the shader.
-
-    # Example
-    ```
-    let shader = Shader::new(ShaderType::Compute).expect("Unable to create compute shader");
-    assert_eq!(shader.get_type(), ShaderType::Compute);
-    ```
-    */
-    pub fn get_type(&self) -> ShaderType {
-        self.inner.r#type
-    }
 }
 
 /// Stores the underlying data of a compiled shader
@@ -340,5 +342,134 @@ impl CompiledShader {
     /// Use at your own risk, no guarantees are made to the data itself, mutating it is to be considered UB.
     pub unsafe fn inner_mut(&mut self) -> &mut CompiledShaderInner {
         &mut self.inner
+    }
+
+    /**
+    Retrieves the id of the compiled shader.
+
+    # Example
+    ```
+    let shader = Shader::new(ShaderType::Compute).expect("Unable to create compute shader");
+    let shader = shader.compile(&shader_src).expect("Unable to compile shader");
+    assert_eq!(shader.get_id(), 1); // example, YMMV
+    ```
+    */
+    pub fn get_id(&self) -> gl::types::GLuint {
+        self.inner.shader.inner.id
+    }
+
+    /**
+    Retrieves the type of the compiled shader.
+
+    # Example
+    ```
+    let shader = Shader::new(ShaderType::Compute).expect("Unable to create compute shader");
+    let shader = shader.compile(&shader_src).expect("Unable to compile shader");
+    assert_eq!(shader.get_type(), ShaderType::Compute);
+    ```
+    */
+    pub fn get_type(&self) -> ShaderType {
+        self.inner.shader.inner.r#type
+    }
+}
+
+/// Error enum for the failed retrieval of a compiled shader's source's len
+#[derive(thiserror::Error, Debug, Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Hash)]
+pub enum SourceLenRetrievalError {
+    /// Used if the underlying object was not created by OpenGL
+    #[error("The underlying object was not created by OpenGL")]
+    NotAnOpenGLValue,
+    /// Used if the underlying object was not recognised as an OpenGL shader
+    #[error("The underlying object was not recognised as an OpenGL shader")]
+    NotAShader,
+    /// Used if GL_SOURCE_LENGTH isn't recognised as an invalid enum
+    #[error("GL_SOURCE_LENGTH was not recognised as a valid enum to obtain from OpenGL")]
+    InvalidEnum,
+    /// Used if the underlying OpenGL error is unknown to graphene
+    #[error("Unknown Error")]
+    Unknown,
+}
+
+impl CompiledShader {
+    /// Returns the length of the concatenated string of all sub-strings passed to OpenGL as the shader's source during compilation
+    pub fn get_source_len(&self) -> Result<usize, SourceLenRetrievalError> {
+        let mut iv = 0;
+
+        let rc = unsafe {
+            gl::GetShaderiv(self.get_id(), gl::SHADER_SOURCE_LENGTH, &mut iv);
+            gl::GetError()
+        };
+
+        match rc {
+            gl::NO_ERROR => {}
+            gl::INVALID_VALUE => return Err(SourceLenRetrievalError::NotAnOpenGLValue),
+            gl::INVALID_OPERATION => return Err(SourceLenRetrievalError::NotAShader),
+            gl::INVALID_ENUM => return Err(SourceLenRetrievalError::InvalidEnum),
+            _ => return Err(SourceLenRetrievalError::Unknown),
+        }
+
+        Ok(iv as usize)
+    }
+}
+
+/// Error enum for the failed retrieval of a compiled shader's source
+#[derive(thiserror::Error, Debug, Clone, Eq, PartialEq)]
+pub enum SourceRetrievalError {
+    /// Used when the length of the source can't be predetermined, which is necessary to pre-allocate the buffer in which
+    /// OpenGL then writes the source string
+    #[error("Unable to obtain the length of the source for pre-allocation: {source}")]
+    UnableToRetrieveSourceLength {
+        #[from]
+        /// The underlying error that was caused when trying to read the source's length
+        source: SourceLenRetrievalError,
+    },
+    /// Used when the shader's source contained at least one nul-byte in an invalid position
+    #[error("Shader's source contained an nul-byte at an invalid position: {source}")]
+    MissingNullByte {
+        #[from]
+        /// The underlying c-string conversion error
+        source: std::ffi::FromVecWithNulError,
+    },
+    /// Used if the shader's source couldn't be compiled due to a compilation error and the error message obtained
+    /// couldn't be converted to a rust string because it was invalid UTF8
+    #[error("Shader's source couldn't be converted into UTF8: {source}")]
+    InvalidUTF8LogSource {
+        #[from]
+        /// The underlying c-string conversion error
+        source: std::ffi::IntoStringError,
+    },
+    /// Used if the underlying object was not created by OpenGL
+    #[error("The underlying object was not created by OpenGL")]
+    NotAnOpenGLValue,
+    /// Used if the underlying object was not recognised as an OpenGL shader
+    #[error("The underlying object was not recognised as an OpenGL shader")]
+    NotAShader,
+    /// Used if the underlying OpenGL error is unknown to graphene
+    #[error("Unknown Error")]
+    Unknown,
+}
+
+impl CompiledShader {
+    /// Returns a concatenated string of all sub-strings passed to OpenGL as the shader's source during compilation
+    pub fn get_source(&self) -> Result<String, SourceRetrievalError> {
+        let len = self.get_source_len()?;
+
+        // includes nul-byte
+        let mut buffer: Vec<u8> = Vec::with_capacity(len);
+
+        let rc = unsafe {
+            gl::GetShaderSource(self.get_id(), len as i32, std::ptr::null_mut(), buffer.as_mut_ptr() as *mut i8);
+            buffer.set_len(len);
+            gl::GetError()
+        };
+
+        match rc {
+            gl::NO_ERROR => {}
+            gl::INVALID_VALUE => return Err(SourceRetrievalError::NotAnOpenGLValue),
+            gl::INVALID_OPERATION => return Err(SourceRetrievalError::NotAShader),
+            _ => return Err(SourceRetrievalError::Unknown),
+        }
+
+        Ok(std::ffi::CString::from_vec_with_nul(buffer)?.into_string()?)
     }
 }
