@@ -1,6 +1,6 @@
 [package]
 name = "alloy_graphene"
-version = "0.0.3"
+version = "0.0.4"
 description = "A pure-rust abstraction over the various graphics libraries"
 authors = ["Folling <coding@folling.com>"]
 repository = "https://github.com/folling/graphene"
