@@ -27,7 +27,7 @@ all = ["opengl"]
 opengl = ["gl"]
 
 [dependencies]
-# The GL crate takes away a lot of effort. OpenGL functions can't just be linked to or have a binding written for them. They
+# The GL crate saves us a lot of effort. OpenGL functions can't just be linked to or have a binding written for them. They
 # must be loaded at runtime instead using glXGetProcAddress(ARB)/wglGetProcAddress/eglGetProcAddress
 # The functions themselves need to be provided by name, which requires some kind of generation from the specs.
 # This is technically possible using something like glut, but it's an effort that can be avoided by simply using this crate.
@@ -36,4 +36,4 @@ opengl = ["gl"]
 gl = { version = "0.14.0", optional = true }
 thiserror = "1.0.30"
 strum = "0.23.0"
-strum_macros = "0.23"
+strum_macros = "0.23.0"
