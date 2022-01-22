@@ -47,20 +47,6 @@ pub enum ShaderType {
     Vertex = gl::VERTEX_SHADER,
 }
 
-/**
-Represents the different pieces of information one can retrieve from a shader.
-
-For more information see the "Description" section [here](https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glGetShaderiv.xml)
-
-# Examples
-```
-let shader = Shader::new(ShaderType::Compute).expect("Unable to create compute shader");
-let iv = my_shader.get_iv(ShaderIVKind::ShaderType).expect("Unable to obtain shader type iv from shader");
-assert_eq!(iv, ShaderIVKind::Compute);
-assert_eq!(iv, my_shader.r#type());
-```
-*/
-
 /// Stores the underlying data of a shader
 ///
 /// Can only be accessed through the unsafe `[inner](inner)/[inner_mut](inner_mut)` methods of the [Shader](Shader) struct.
