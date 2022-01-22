@@ -1,5 +1,5 @@
 [package]
-name = "graphene"
+name = "alloy_graphene"
 version = "0.0.1"
 description = "A pure-rust abstraction over the various graphics libraries"
 authors = ["Folling <coding@folling.com>"]
