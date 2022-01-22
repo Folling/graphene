@@ -37,6 +37,6 @@ It currently supports only OpenGL. However other graphic libraries will be added
 #![cfg_attr(feature = "clippy", warn(unseparated_literal_suffix))]
 #![cfg_attr(feature = "clippy", warn(wrong_pub_self_convention))]
 
-/// Module for idiomatic OpenGL bindings. See the module's [Documentation](opengl)
+/// Module for idiomatic OpenGL bindings
 #[cfg(feature = "opengl")]
 pub mod opengl;
