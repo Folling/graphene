@@ -2,7 +2,7 @@
 name = "graphene"
 version = "0.0.1"
 description = "A pure-rust abstraction over the various graphics libraries"
-authors = ["Jonathan Purol <coding@folling.com>"]
+authors = ["Jonathan Purol <coding@folling.de>"]
 repository = "https://github.com/folling/graphene"
 licence = "BSD-3-Clause"
 license-file = "LICENCE.txt"
