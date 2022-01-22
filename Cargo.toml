@@ -4,7 +4,7 @@ version = "0.0.3"
 description = "A pure-rust abstraction over the various graphics libraries"
 authors = ["Folling <coding@folling.com>"]
 repository = "https://github.com/folling/graphene"
-licence = "BSD-3-Clause"
+license = "BSD-3-Clause"
 license-file = "LICENCE.txt"
 keywords = [
     "graphics",
