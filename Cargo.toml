@@ -14,8 +14,6 @@ keywords = [
 ]
 categories = [
     "api-bindings",
-    "game-development",
-    "game-engines",
     "graphics",
     "gui",
     "rendering",
