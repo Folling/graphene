@@ -5,6 +5,7 @@ graphene is part of a larger application development framework called [alloy](ht
 It currently supports only OpenGL. However other graphic libraries will be added in the future.
 */
 
+#![feature(adt_const_params)]
 #![feature(register_tool)]
 #![register_tool(rust_analyzer)]
 // Enable clippy if our Cargo.toml file asked us to do so.
