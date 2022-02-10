@@ -17,8 +17,8 @@ or not a shader was compiled before being attached to a ShaderProgram.
 Wraps the different OpenGL shader types.
 
 OpenGL supports 6 different types of shaders for varying stages of the pipeline.
-You can read more about shaders here: <https://www.khronos.org/opengl/wiki/Shader>
-And more about the pipeline here: <https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview>
+You can read more about shaders [here](https://www.khronos.org/opengl/wiki/Shader)
+And more about the pipeline [here](https://www.khronos.org/opengl/wiki/Rendering_Pipeline_Overview>
 
 # Examples
 ```
@@ -84,7 +84,7 @@ impl<const S: ShaderType> Ord for ShaderInner<S> {
 }
 
 /**
-A shader serves as a program that is executed in parallel for each texel on the screen.
+A shader serves as a piece of code that is executed in parallel per texel of the rendering target.
 
 There are different kinds of shaders with different applications.
 See [ShaderType](ShaderType) for more information on the different types.
@@ -151,8 +151,9 @@ impl<const S: ShaderType> Shader<S> {
 #[derive(thiserror::Error, Debug, Clone, Eq, PartialEq)]
 pub enum ShaderCreationError {
     /// Used if an error occurs in the underlying driver
-    #[error("OpenGL error: {rc}")]
-    OpenGL_Error { rc: gl::types::GLenum },
+    #[error("OpenGL error: {0}")]
+    #[allow(non_camel_case_types)]
+    OpenGL_Error(gl::types::GLenum),
 }
 
 impl<const S: ShaderType> Shader<S> {
@@ -161,9 +162,7 @@ impl<const S: ShaderType> Shader<S> {
         let id = unsafe { gl::CreateShader(S as _) };
 
         if id == 0 {
-            return ShaderCreationError::OpenGL_Error {
-                rc: unsafe { gl::GetError() },
-            };
+            return Err(ShaderCreationError::OpenGL_Error(unsafe { gl::GetError() }));
         }
 
         Ok(Shader { inner: ShaderInner { id } })
@@ -200,8 +199,9 @@ pub enum ShaderCompileError {
         source: std::ffi::IntoStringError,
     },
     /// Used if an error occurs in the underlying driver
-    #[error("OpenGL error: {rc}")]
-    OpenGL_Error { rc: gl::types::GLenum },
+    #[error("OpenGL error: {0}")]
+    #[allow(non_camel_case_types)]
+    OpenGL_Error(gl::types::GLenum),
 }
 
 impl<const S: ShaderType> Shader<S> {
@@ -220,7 +220,7 @@ impl<const S: ShaderType> Shader<S> {
             match gl::GetError() {
                 gl::NO_ERROR => {}
                 err => {
-                    return Err(ShaderCompileError::OpenGL_Error { rc: err });
+                    return Err(ShaderCompileError::OpenGL_Error(err));
                 }
             }
         };
@@ -231,7 +231,7 @@ impl<const S: ShaderType> Shader<S> {
             match gl::GetError() {
                 gl::NO_ERROR => {}
                 err => {
-                    return Err(ShaderCompileError::OpenGL_Error { rc: err });
+                    return Err(ShaderCompileError::OpenGL_Error(err));
                 }
             }
         };
@@ -335,8 +335,9 @@ impl<const S: ShaderType> CompiledShader<S> {
 #[derive(thiserror::Error, Debug, Copy, Clone, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub enum SourceLenRetrievalError {
     /// Used if an error occurs in the underlying driver
-    #[error("OpenGL error: {rc}")]
-    OpenGL_Error { rc: gl::types::GLenum },
+    #[error("OpenGL error: {0}")]
+    #[allow(non_camel_case_types)]
+    OpenGL_Error(gl::types::GLenum),
 }
 
 impl<const S: ShaderType> CompiledShader<S> {
@@ -350,7 +351,7 @@ impl<const S: ShaderType> CompiledShader<S> {
             match gl::GetError() {
                 gl::NO_ERROR => {}
                 err => {
-                    return Err(SourceLenRetrievalError::OpenGL_Error { rc: err });
+                    return Err(SourceLenRetrievalError::OpenGL_Error(err));
                 }
             }
         };
@@ -386,8 +387,9 @@ pub enum SourceRetrievalError {
         source: std::ffi::IntoStringError,
     },
     /// Used if an error occurs in the underlying driver
-    #[error("OpenGL error: {rc}")]
-    OpenGL_Error { rc: gl::types::GLenum },
+    #[error("OpenGL error: {0}")]
+    #[allow(non_camel_case_types)]
+    OpenGL_Error(gl::types::GLenum),
 }
 
 impl<const S: ShaderType> CompiledShader<S> {
@@ -405,7 +407,7 @@ impl<const S: ShaderType> CompiledShader<S> {
             match gl::GetError() {
                 gl::NO_ERROR => {}
                 err => {
-                    return Err(SourceRetrievalError::OpenGL_Error { rc: err });
+                    return Err(SourceRetrievalError::OpenGL_Error(err));
                 }
             }
         };
